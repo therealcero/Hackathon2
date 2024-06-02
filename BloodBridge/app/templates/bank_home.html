@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/bank_home.css' %}">
+    <style>
+        /* CSS for map container */
+        #map {
+            width: 50%;
+            height: 700px;
+            background-color: #333;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(201, 102, 102, 0.5); /* Red glow effect */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+        }
+    </style>
+    <!-- Include Google Maps API script with your API key -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYrXgAAx-FeBTfPqiOEZjIn__B5Ye7pZQ&callback=initMap" async defer></script>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#">Sent Requests</a></li>
+            <li><a href="{% url 'bank_home' %}">Search Donors</a></li>
+            <li><a href="#">Resources</a></li>
+            <li><a href="#">Profile</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <section class="search-section">
+            <div class="search-inputs">
+                <h1>FIND A <br> BLOOD <br> DONOR...</h1>
+                <label for="blood-type">Blood Type:</label>
+                <input type="text" id="blood-type" placeholder="Enter blood type">
+                <label for="radius">Radius (km):</label>
+                <input type="number" id="radius" placeholder="Enter radius", min="1", value="1">
+                <button id="search-btn">Search</button>
+            </div>
+            <!-- Map container -->
+            <div id="map">Map Placeholder</div>
+        </section>
+        <section class="results">
+            <h2>Donors Found</h2>
+            <ul class="donor-list">
+               <li>Hellow</li>
+            </ul>
+        </section>
+    </div>
+
+    <script>
+        // Initialize the map
+        function initMap() {
+            // The location of the center of the map
+            const center = { lat: 12.9634, lng: 77.5855 };
+            // The map, centered at the center location
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 8,
+                center: center,
+            });
+            // The marker, positioned at the center
+            const marker = new google.maps.Marker({
+                position: center,
+                map: map,
+            });
+
+            // Function to handle search button click
+            document.getElementById("search-btn").addEventListener("click", function(event) {
+            event.preventDefault(); // Prevent form submission
+
+            // Get blood type and radius entered by the user
+            const bloodType = document.getElementById("blood-type").value;
+            const radius = document.getElementById("radius").value;
+
+            // Make AJAX request to Django view
+            fetch(`/search_donors/?blood_type=${bloodType}&radius=${radius}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Received donor data:", data); // Debugging
+                    
+                    // Display the results section
+                    document.querySelector('.results').style.display = 'block';
+
+                    // Update donor list
+                    const donorList = document.querySelector(".donor-list");
+                    donorList.innerHTML = ""; // Clear existing list
+                    data.forEach(donor => {
+                        // Append donor info as list item to the list
+                        const donorItem = document.createElement("li");
+                        donorItem.textContent = `${donor.name} - Distance: ${donor.distance} km`;
+                        donorList.appendChild(donorItem);
+                    });
+                })
+                .catch(error => console.error("Error:", error));
+        });
+
+
+        }
+    </script>
+</body>
+</html>

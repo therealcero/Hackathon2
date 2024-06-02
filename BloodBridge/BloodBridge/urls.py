@@ -20,7 +20,9 @@ from app import views
 
 urlpatterns = [
     path('', views.login_view, name='login'),
-    path('home/', views.home, name='home'),
-    path('home/index', views.home, name='home'),
-    path('home/find', views.find, name='home'),
+    path('bank_home/', views.bank_home, name='bank_home'),
+    path('bank_home/find', views.find, name='find'),
+    path('find', views.find, name='find'),
+    path('search_donors/', views.search_donors, name='search_donors'),
+    path('donor_home/', views.donor_home, name='donor_home')
 ]

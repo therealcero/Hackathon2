@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donor Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/donor_home.css' %}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li></li>
+            <li class="profile"><a href="#">Profile</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section class="requests">
+            <div class="requests-list">
+                <!-- Requests received will be dynamically added here -->
+            </div>
+        </section>
+        <section class="chat">
+            <div class="chat-header">
+                <h2>Chat</h2>
+            </div>
+            <div class="chat-messages">
+                <!-- Chat messages will be dynamically added here -->
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type your message...">
+                <button>Send</button>
+            </div>
+        </section>
+    </main>
+    <script src="/bloodBridge/jsfiles/dash-donor.js" defer></script>
+</body>
+</html>
