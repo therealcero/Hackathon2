@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donor Profile</title>
+    <link rel="stylesheet" href="{% static 'css/profile-donor.css' %}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li class="dash-donor"><a href="/bloodBridge/htmlFiles/dash-donor.html">Dashboard</a></li>
+        </ul>
+    </nav>
+    <main class="container">
+        <h2>Donor Profile</h2>
+        <div class="profile-details">
+            <p><strong>Name:</strong> John Doe</p>
+            <p><strong>Age:</strong> 30</p>
+            <p><strong>Gender:</strong> Male</p>
+            <p><strong>Phone Number:</strong> +1234567890</p>
+            <p><strong>Email:</strong> johndoe@example.com</p>
+            <p><strong>Status:</strong> Active</p>
+            <p><strong>Donations:</strong> 5 times</p>
+            <p><strong>Location:</strong> New York, USA</p>
+            <p><strong>Registered Bank:</strong> ABC Blood Bank</p>
+        </div>
+        <button id="logout-btn">Logout</button>
+    </main>
+    <script src="/bloodBridge/jsfiles/profile-donor.js" defer></script>
+</body>
+</html>

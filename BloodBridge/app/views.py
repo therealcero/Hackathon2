@@ -1,3 +1,5 @@
+from django.views.decorators.csrf import csrf_exempt  
+import json
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -5,8 +7,9 @@ from django.contrib.auth.models import User
 from app import sendotp
 from django.http import JsonResponse
 from .models import BloodDonor
-import math
-
+from .models import Requests
+import random
+from datetime import datetime, timedelta
 
 
 
@@ -45,7 +48,7 @@ def login_view(request):
                 # OTP field submitted
                 entered_otp = request.POST['otp']
                 # if entered_otp == request.session['otp']:
-                if entered_otp == '123456':
+                if entered_otp == '163527':
                     login(request, user)
                     # Clear OTP from session
                     request.session.pop('otp', None)
@@ -70,7 +73,6 @@ def login_view(request):
             return render(request, 'login.html', {'error_message': 'Invalid username or password'})
     else:
         # Render the login form
-        request.session.pop('username', None)
         request.session.pop('password', None)
         request.session.pop('otp', None)
         return render(request, 'login.html')
@@ -138,3 +140,120 @@ def donor_home(request):
 def find(request):
     return render(request, 'find.html')
 
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .models import Requests
+
+@login_required
+def send_request(request):
+    if request.method == "POST":
+
+        postmethod = request.POST.get('message')
+        message, user_id = postmethod.split("@")
+        bank_name = request.user.username
+        
+        print(message)
+        print(user_id)
+        print(bank_name)
+
+        new_request = Requests(
+            bank_name=bank_name,
+            message=message,
+            status=0,
+            user_id=user_id
+        )
+        new_request.save()
+        
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"error": "Invalid request"}, status=400)
+    
+
+def fetch_messages(request):
+    # Fetch chat messages where user_id matches the session username
+    messages = Requests.objects.filter(user_id=request.user.username).values('message')
+    ids = Requests.objects.filter(user_id=request.user.username).values('id')
+    id_list = list(ids)
+    messages_list = list(messages)
+    res_list = []
+    for i in range(len(id_list)):
+        t = {**id_list[i],  **messages_list[i]}
+        res_list.append(t)
+    # Convert queryset to a list of dictionaries
+    
+    print(res_list)
+
+    # Return chat messages as JSON response
+    return JsonResponse(res_list, safe=False)
+
+
+@csrf_exempt
+def accept_request(request):
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+        id = data.get('id')
+
+        try:
+            obj = Requests.objects.get(id=id)
+            obj.status = 1
+            
+            next_day = datetime.now() + timedelta(days=1)
+            time_slots = ["10:00", "13:00", "16:00"]
+            time_slot = f"{next_day.strftime('%Y-%m-%d')} {random.choice(time_slots)}"
+            obj.time_slot = time_slot
+            
+            description = ("Thank you for helping out the ones in need. "
+                           "You have been assigned a time slot. Please be at the bank by that time. "
+                           "Address: nth main, XYZ street, ABC_BLOODBANK, Bangalore 560XXX, Karnataka, India. "
+                           "Thank you for your cooperation. Have a nice day.")
+            obj.description = description
+            
+            obj.save()
+            
+            return JsonResponse({
+                'message': 'Request accepted successfully',
+                'time_slot': time_slot,
+                'description': description,
+                'bank_name': obj.bank_name,
+                'subject': obj.message
+            })
+        except Requests.DoesNotExist:
+            return JsonResponse({'error': 'Object not found'}, status=404)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+
+
+@csrf_exempt
+def check_status(request):
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+        id = data.get('id')
+
+        try:
+            obj = Requests.objects.get(id=id)
+            return JsonResponse({
+                'status': obj.status,
+                'bank_name': obj.bank_name,
+                'subject': obj.message,
+                'description': obj.description,
+                'time_slot': obj.time_slot
+            })
+        except Requests.DoesNotExist:
+            return JsonResponse({'error': 'Object not found'}, status=404)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+@login_required
+def fetch_sent_requests(request):
+    bank_name = request.user.username
+    requests = Requests.objects.filter(bank_name=bank_name).values('message', 'description', 'time_slot')
+    requests_list = list(requests)
+    return JsonResponse(requests_list, safe=False)
+
+
+def profile(request):
+    return render(request,'profile-donor.html')

@@ -18,6 +18,8 @@ class Requests(models.Model):
     status = models.IntegerField()
     user_id = models.CharField(max_length=255,default="None")
     sent_time = models.DateTimeField(default=timezone.now)
+    description = models.CharField(max_length=1000,null=True)
+    time_slot = models.DateTimeField(null=True)
 
     def __str__(self):
         return self.bank_name

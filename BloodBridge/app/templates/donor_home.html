@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Donor Dashboard</title>
     <link rel="stylesheet" href="{% static 'css/donor_home.css' %}">
+   
+
 </head>
 <body>
     <nav>
@@ -22,17 +24,149 @@
         </section>
         <section class="chat">
             <div class="chat-header">
-                <h2>Chat</h2>
+                <h2>Request Details</h2>
             </div>
             <div class="chat-messages">
                 <!-- Chat messages will be dynamically added here -->
             </div>
-            <div class="chat-input">
-                <input type="text" placeholder="Type your message...">
-                <button>Send</button>
-            </div>
         </section>
     </main>
-    <script src="/bloodBridge/jsfiles/dash-donor.js" defer></script>
+    <div class="action-bar">
+        <button class="accept" id="accept" name="accept">ACCEPT</button>
+        <button class="forward" id="forward" name="forward">FORWARD</button>
+    </div>
+    <!-- Add this script in your HTML file -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            function fetchChatMessages() {
+                fetch("/fetch_messages/")
+                    .then(response => response.json())
+                    .then(data => {
+                        const requestsList = document.querySelector(".requests-list");
+                        requestsList.innerHTML = "";
+    
+                        data.forEach(message => {
+                            const messageElement = document.createElement("div");
+                            messageElement.textContent = message.message;
+                            messageElement.classList.add("request-message");
+                            messageElement.dataset.id = message.id;
+                            requestsList.appendChild(messageElement);
+                        });
+    
+                        const requestMessages = document.querySelectorAll(".request-message");
+                        requestMessages.forEach(message => {
+                            message.addEventListener("click", () => handleRequestClick(message.dataset.id));
+                        });
+                    })
+                    .catch(error => console.error("Error fetching chat messages:", error));
+            }
+    
+            function handleRequestClick(id) {
+                console.log("Clicked on message with id:", id);
+    
+                fetch('/check_status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: id })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 0) {
+                        const actionBar = document.querySelector(".action-bar");
+                        actionBar.style.display = "block";
+    
+                        const acceptButton = document.getElementById("accept");
+                        acceptButton.addEventListener("click", () => acceptRequest(id));
+                    } else {
+                        displayRequestDetails({
+                            bank_name: data.bank_name,
+                            subject: data.subject,
+                            description: data.description,
+                            time_slot: data.time_slot
+                        });
+                    }
+                })
+                .catch(error => console.error("Error checking status:", error));
+            }
+    
+            function acceptRequest(id) {
+                fetch('/accept_request/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ id: id })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    displayRequestDetails({
+                        bank_name: data.bank_name,
+                        subject: data.subject,
+                        description: data.description,
+                        time_slot: data.time_slot
+                    });
+    
+                    // Update the chat messages
+                    fetchAllRequests();
+                })
+                .catch(error => console.error("Error accepting request:", error));
+            }
+    
+            function displayRequestDetails(details) {
+                const chatMessages = document.querySelector(".chat-messages");
+                chatMessages.innerHTML = ""; // Clear previous messages
+    
+                const date = details.time_slot.split('T')[0];
+                const t = details.time_slot.split('T')[1];
+                const time = t.split('Z')[0];
+                console.log(details.time_slot);
+    
+                const messageElement = document.createElement("div");
+                messageElement.innerHTML = `
+                    <p>From: ${details.bank_name}</p>
+                    <p>Subject: ${details.subject}</p>
+                    <p>Description: ${details.description}</p>
+                    <p>Slot:</p>
+                    <p>&nbsp;&nbsp;&nbsp;Date: ${date}</p>
+                    <p>&nbsp;&nbsp;&nbsp;Time: ${time}</p>
+                `;
+                messageElement.classList.add("chat-message");
+                chatMessages.appendChild(messageElement);
+            }
+    
+            function fetchAllRequests() {
+                fetch('/fetch_all_requests/')
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(item => {
+                            displayRequestDetails(item);
+                        });
+                    })
+                    .catch(error => console.error("Error fetching all requests:", error));
+            }
+    
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; cookies.length > i; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+    
+            fetchChatMessages();
+            fetchAllRequests(); // Fetch all requests on page load
+        });
+    </script>  
 </body>
 </html>

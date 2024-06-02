@@ -40,7 +40,7 @@
                 <label for="blood-type">Blood Type:</label>
                 <input type="text" id="blood-type" placeholder="Enter blood type">
                 <label for="radius">Radius (km):</label>
-                <input type="number" id="radius" placeholder="Enter radius", min="1", value="1">
+                <input type="number" id="radius" placeholder="Enter radius" min="1" value="1">
                 <button id="search-btn">Search</button>
             </div>
             <!-- Map container -->
@@ -49,12 +49,22 @@
         <section class="results">
             <h2>Donors Found</h2>
             <ul class="donor-list">
-               <li>Hellow</li>
+                <li>Hellow</li>
             </ul>
         </section>
+        <div class="request-container" style="display: none;">
+            <h2>Send Request</h2>
+            <form id="request-form" method="post">
+                {% csrf_token %}
+                <textarea id="message" name="message" placeholder="Message..."></textarea><br>
+                <input type="hidden" id="uid" name="user_id">
+                <input type="submit" value="Send">
+            </form>
+        </div>
     </div>
 
     <script>
+        var user;
         // Initialize the map
         function initMap() {
             // The location of the center of the map
@@ -72,35 +82,85 @@
 
             // Function to handle search button click
             document.getElementById("search-btn").addEventListener("click", function(event) {
-            event.preventDefault(); // Prevent form submission
+                event.preventDefault(); // Prevent form submission
 
-            // Get blood type and radius entered by the user
-            const bloodType = document.getElementById("blood-type").value;
-            const radius = document.getElementById("radius").value;
+                // Get blood type and radius entered by the user
+                const bloodType = document.getElementById("blood-type").value;
+                const radius = document.getElementById("radius").value;
 
-            // Make AJAX request to Django view
-            fetch(`/search_donors/?blood_type=${bloodType}&radius=${radius}`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Received donor data:", data); // Debugging
-                    
-                    // Display the results section
-                    document.querySelector('.results').style.display = 'block';
+                // Make AJAX request to Django view
+                fetch(`/search_donors/?blood_type=${bloodType}&radius=${radius}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Received donor data:", data); // Debugging
 
-                    // Update donor list
-                    const donorList = document.querySelector(".donor-list");
-                    donorList.innerHTML = ""; // Clear existing list
-                    data.forEach(donor => {
-                        // Append donor info as list item to the list
-                        const donorItem = document.createElement("li");
-                        donorItem.textContent = `${donor.name} - Distance: ${donor.distance} km`;
-                        donorList.appendChild(donorItem);
-                    });
+                        // Display the results section
+                        document.querySelector('.results').style.display = 'block';
+
+                        // Update donor list
+                        const donorList = document.querySelector(".donor-list");
+                        donorList.innerHTML = ""; // Clear existing list
+                        data.forEach(donor => {
+                            // Append donor info as list item to the list
+                            const donorItem = document.createElement("li");
+                            donorItem.textContent = `${donor.name} - Distance: ${donor.distance.toFixed(2)} km`;
+                            donorItem.dataset.userId = donor.id; // Store user ID in a data attribute
+                            donorItem.addEventListener("click", () => showRequestForm(donor.id));
+                            console.log(donor.id);
+                            donorList.appendChild(donorItem);
+                        });
+                    })
+                    .catch(error => console.error("Error:", error));
+            });
+            
+            // Function to show the request form
+            function showRequestForm(userId) {
+                // Show the form
+                console.log(userId);
+                const form = document.querySelector(".request-container");
+                form.style.display = "block";
+                document.getElementById("uid").value = userId;
+                user = userId;
+
+            }
+
+            // Handle form submission
+            document.getElementById("request-form").addEventListener("submit", function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                doc = document.getElementById('message');
+                var temp = doc.value;
+                doc.value = doc.value + "@" + user;
+                document.querySelector(".request-container").style.display = "none";
+                const formData = new FormData(this);
+                fetch("/send_request/", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-CSRFToken": formData.get("csrfmiddlewaretoken")
+                    }
                 })
-                .catch(error => console.error("Error:", error));
-        });
-
-
+                
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error("Network response was not ok.");
+                })
+                .then(data => {
+                    doc.value = temp;
+                    console.log("Request sent successfully:", data);
+                    // Optionally, you can hide the form again and show a success message
+                    document.querySelector(".request-container").style.display = "none";
+                    doc = document.getElementById('message');
+                    doc.value = null;
+                    alert("Request sent successfully!");
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("An error occurred. Please try again.");
+                });
+            });
         }
     </script>
 </body>

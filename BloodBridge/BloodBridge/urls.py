@@ -24,5 +24,13 @@ urlpatterns = [
     path('bank_home/find', views.find, name='find'),
     path('find', views.find, name='find'),
     path('search_donors/', views.search_donors, name='search_donors'),
-    path('donor_home/', views.donor_home, name='donor_home')
+    path('donor_home/', views.donor_home, name='donor_home'),
+    path('send_request/', views.send_request, name='send_request'),
+    path('fetch_messages/', views.fetch_messages, name='fetch_messages'),
+    path('check_status/', views.check_status, name='check_status'),
+    path('accept_request/', views.accept_request, name='accept_request'),
+    path('fetch_sent_requests/', views.fetch_sent_requests, name='fetch_sent_requestss'),
+    path('profile/', views.profile, name='profile'),
+
+    
 ]

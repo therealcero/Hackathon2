@@ -46,7 +46,18 @@ nav ul li a:hover {
     gap: 20px;
 }
 
-
+#map-placeholder {
+    width: 50%;
+    height: 400px;
+    background-color: #333;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(201, 102, 102, 0.5); /* Red glow effect */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+}
 
 .search-inputs {
     display: flex;
@@ -94,8 +105,6 @@ nav ul li a:hover {
 .results {
     display: none; /* Hide by default */
     margin-top: 20px;
-    position: absolute;
-    top: 450px;
 }
 
 .results h2 {
@@ -132,15 +141,6 @@ nav ul li a:hover {
     background-color: #cd0808; /* Red 700 */
 }
 
-.request-container{
-    display: none;
-    background-color: #494949;
-    width: 325px;
-    height: 175px;
-    text-align: center;
-}
-
-
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -151,8 +151,6 @@ nav ul li a:hover {
         transform: translateY(0);
     }
 }
-
-
 
 .request-btn.sent {
     background-color: #ff6060; /* Red 700 */

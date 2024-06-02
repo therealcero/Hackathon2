@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources</title>
+    <link rel="stylesheet" href="../cssFiles/resources-bank.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="sentRequests-bank.html">Sent Requests</a></li>
+            <li><a href="dash-bank.html">Search Donors</a></li>
+            <li><a href="resources-bank.html">Resources</a></li>
+            <li><a href="profile-bank.html">Profile</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h2>Bank Resources</h2>
+        <form id="resources-form">
+            <div class="form-group">
+                <label for="blood-intake">Amount of Blood Intake per Blood Type:</label>
+                <input type="text" id="blood-intake" name="blood-intake" required>
+            </div>
+            <div class="form-group">
+                <label for="blood-outgoing">Amount of Blood Outgoing per Blood Type:</label>
+                <input type="text" id="blood-outgoing" name="blood-outgoing" required>
+            </div>
+            <div class="form-group">
+                <label for="blood-remaining">Amount of Blood Remaining per Blood Type:</label>
+                <input type="text" id="blood-remaining" name="blood-remaining" required>
+            </div>
+            <div class="form-group">
+                <label for="total-intake">Total Amount of Blood Intake:</label>
+                <input type="text" id="total-intake" name="total-intake" required>
+            </div>
+            <div class="form-group">
+                <label for="total-outgoing">Total Amount of Blood Outgoing:</label>
+                <input type="text" id="total-outgoing" name="total-outgoing" required>
+            </div>
+            <div class="form-group">
+                <label for="total-remaining">Total Amount of Blood Remaining:</label>
+                <input type="text" id="total-remaining" name="total-remaining" required>
+            </div>
+            <button type="submit">Update</button>
+        </form>
+        <div id="update-success" style="display: none;">Resources Updated Successfully!</div>
+    </div>
+    <script src="../jsFiles/resources-bank.js"></script>
+</body>
+</html>
